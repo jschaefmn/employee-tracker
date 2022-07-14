@@ -46,12 +46,6 @@ function startPrompt() {
           break;
         case 'View Roles':
           viewRoles();
-        case 'View Employees By Role':
-          viewRoles();
-          break;
-        case 'View Employees By Department':
-          viewEmployeeDepartments();
-          break;
         case 'Update an Employee':
           updateEmployee();
           break;
@@ -90,25 +84,16 @@ function viewDepartments() {
   });
 }
 
-
-// View Employees By Role
+// view roles
 function viewRoles() {
   const query = "SELECT * FROM role";
-  db.query(query, function (err, res) {
-    if (err) throw err;
-    console.table('All Roles:', res);
-    startPrompt();
-  });
-}
-// View Employees By Department
-function viewEmployeeDepartments() {
-  const query = "SELECT * FROM department";
-  db.query(query, function (err, res) {
+  db.query(query, function (err,res) {
     if (err) throw err;
     console.table("All Roles:", res);
     startPrompt();
-  })
+  });
 }
+
 // Update an Employee
 function updateEmployee() {
   db.query("SELECT * FROM employee", function (err, result) {
