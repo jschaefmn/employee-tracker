@@ -2,7 +2,6 @@ const inquirer = require('inquirer');
 const express = require('express');
 const db = require('./db/connection');
 const cTable = require('console.table');
-const { start } = require('repl');
 
 const app = express();
 app.use(express.urlencoded({ extended: false }));
@@ -226,57 +225,48 @@ function addEmployee() {
 }
 // Add Role
 function addRole() {
-  db.query(`SELECT * FROM department`, function (err, res) {
-    if (err) throw err;
-
-    inquirer
-      .prompt([
-        {
-          name: "new_role",
-          type: "input",
-          message: "What is the name of the role you would like to add?",
-        },
-        {
-          name: "salary",
-          type: "input",
-          message: "What is the salary for this role?",
-        },
-        {
-          name: "Department",
-          type: "list",
-          choices: function () {
-            const deptArry = [];
-            for (let i = 0; i < res.length; i++) {
-              deptArry.push(res[i].name);
-            }
-            return deptArry;
-          },
-        },
-      ])
-      .then(function (answer) {
-        let department_id;
-        for (let a = 0; a < res.length; a++) {
-          if (res[a].name == answer.Department) {
-            department_id = res[a].id;
+  const sql = `SELECT * FROM department`;
+  db.query(sql, (err, rows) => {
+    if (err) {
+      console.log(err);
+    };
+    const departments = rows.map(({ id, name }) => ({
+      value: id,
+      name: `${name}`
+    }));
+    inquirer.prompt([{
+      type: 'list',
+      name: 'deptChoice',
+      message: 'Which department does the new role belong to?',
+      choices: departments
+    },
+    {
+      type: 'input',
+      name: 'newRole',
+      message: 'What is the name of the new role?',
+    },
+    {
+      type: 'input',
+      name: 'newSalary',
+      message: 'What is the salary?',
+    }])
+      .then(answer => {
+        let title = answer.newRole;
+        let salary = answer.newSalary;
+        let deptChoice = answer.deptChoice;
+        const sql = `INSERT INTO role (title, salary, department_id)
+                        VALUES (?, ?, ?)`;
+        const params = [title, salary, deptChoice];
+        db.query(sql, params, (err, rows) => {
+          if (err) {
+            console.log(err);
           }
-        }
-        db.query(
-          `INSERT INTO role SET ?`,
-          {
-            title: answer.new_role,
-            salary: answer.salary,
-            department_id: department_id,
-          },
-          function (err, res) {
-            if (err) throw err;
-            console.log("Your new role has been added!");
-            console.table("All Roles:", res);
-            startPrompt();
-          }
-        );
+          console.log(`Added ${title}, with a salary of ${salary} to the list of roles.`)
+        });
+        viewRoles();
       });
   });
-}
+};
 // Add Department
 function addDepartment() {
   inquirer
