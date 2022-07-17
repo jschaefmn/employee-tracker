@@ -1,4 +1,4 @@
-# employee-tracker
+# Employee Tracker
 
 ## Description
 This is command-line based application that allows a company to manage their employee database.
